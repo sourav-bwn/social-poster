@@ -46,7 +46,9 @@ jobs:
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           CHROME_BIN: /usr/bin/google-chrome
-        run: node src/cli.mjs generate | tee /tmp/generated.json
+        run: |
+          set -o pipefail
+          node src/cli.mjs generate | tee /tmp/generated.json
       - name: Commit pending draft
         run: |
           git config user.name 'github-actions[bot]'
