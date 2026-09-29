@@ -25,7 +25,7 @@ export function validateCopy(copy) {
 export async function geminiCopy(project, previous) {
   if (!process.env.GEMINI_API_KEY) throw new Error('GEMINI_API_KEY missing: no scheduled draft generated');
   const prompt = `Write two distinct first-person social posts for the developer Sourav Garai about his own project. Return ONLY JSON with string keys linkedin and instagram. No made-up metrics, users, hires, dates, technology, performance claims, or roles. Avoid generic AI filler. LinkedIn: professional, specific engineering choices and value to recruiters, stronger and more precise than earlier posts. Instagram: short, casual, visual, suited to the graphic. Do not imply the app is production-grade if source says demo. Do not repeat earlier hooks. Human approval is required before publication. Ground all claims only in this verified project brief:\n${JSON.stringify(project)}\nPrevious posts (style/hook avoidance only): ${JSON.stringify(previous.slice(-5))}`;
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(process.env.GEMINI_MODEL || 'gemini-2.5-flash')}:generateContent`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(process.env.GEMINI_MODEL || 'gemini-3.8-flash')}:generateContent`;
   const response = await fetch(url, {method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':process.env.GEMINI_API_KEY},body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{responseMimeType:'application/json',temperature:0.7}})});
   if (!response.ok) throw new Error(`Gemini failed HTTP ${response.status}: ${await response.text()}`);
   const data = await response.json();
