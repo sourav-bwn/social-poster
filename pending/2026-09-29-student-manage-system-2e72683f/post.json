@@ -1,0 +1,17 @@
+{
+  "id": "2026-09-29-student-manage-system-2e72683f",
+  "project": "student-manage-system",
+  "project_url": "https://github.com/sourav-bwn/student-manage-system",
+  "headline": "Keep student records in one place.",
+  "features": [
+    "Attendance",
+    "Grades",
+    "Local demo only"
+  ],
+  "linkedin": "Consolidating academic tracking into a single client-side interface requires clean data structuring between distinct functional areas—specifically attendance and grading.\n\nI built the Student Management System as a browser-based dashboard demo to explore that layout. The project centralizes academic records, student grades, and attendance tracking into one cohesive interface. \n\nBecause actual student data involves clear security and compliance boundaries, I specifically scoped this project as a local demo rather than a production service. It allowed me to focus purely on dashboard architecture, multi-category record views, and client-side data presentation.\n\nCode and project details: https://github.com/sourav-bwn/student-manage-system",
+  "instagram": "Dashboard layout for student records 📊\n\nExploring a unified browser interface to keep academic records, attendance, and grades organized in one place. Strictly a local demo to test out dashboard workflows and record views.\n\nCheck out the repo: https://github.com/sourav-bwn/student-manage-system",
+  "alt_text": "Card for Student Management System: Keep student records in one place. Features: Attendance, Grades, Local demo only.",
+  "generation": "gemini",
+  "status": "pending",
+  "created_at": "2026-09-29T08:11:04.241Z"
+}
