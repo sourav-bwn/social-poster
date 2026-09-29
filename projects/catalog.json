@@ -5,7 +5,11 @@
     "eyebrow": "Student attendance, simplified",
     "headline": "Less time on records. More time for students.",
     "summary": "A browser-based attendance tracker with per-date auto-save, search and filters, live stats, Excel export, CSV backup and print.",
-    "features": ["Date-based auto-save", "Search and live stats", "Excel + CSV export"],
+    "features": [
+      "Date-based auto-save",
+      "Search and live stats",
+      "Excel + CSV export"
+    ],
     "repo": "https://github.com/sourav-bwn/attendance-system",
     "source": "Public repository README; checked 2026-09-29"
   },
@@ -15,9 +19,20 @@
     "eyebrow": "A browser-based student dashboard",
     "headline": "Keep student records in one place.",
     "summary": "A browser-based student management demo for academic records, attendance and grades. This is a local demo, not a production service for real student data.",
-    "features": ["Attendance", "Grades", "Local demo only"],
+    "features": [
+      "Attendance",
+      "Grades",
+      "Local demo only"
+    ],
     "repo": "https://github.com/sourav-bwn/student-manage-system",
-    "source": "Public GitHub repository description; checked 2026-09-29"
+    "source": "Public GitHub repository description; checked 2026-09-29",
+    "screenshots": [
+      "assets/student-manage-system/dashboard.png",
+      "assets/student-manage-system/students.png",
+      "assets/student-manage-system/courses.png"
+    ],
+    "screenshot_source": "Live public demo with sample data, visually reviewed 2026-09-29",
+    "demo": "https://sourav-bwn.github.io/student-manage-system/"
   },
   {
     "slug": "gods-eye-view",
@@ -25,7 +40,11 @@
     "eyebrow": "Open-source spatial intelligence",
     "headline": "A globe built for exploring live layers.",
     "summary": "A browser-based 3D globe exploring live, open-source spatial data. Some layers depend on third-party API access and availability.",
-    "features": ["Interactive 3D globe", "Live data layers", "Open-source project"],
+    "features": [
+      "Interactive 3D globe",
+      "Live data layers",
+      "Open-source project"
+    ],
     "repo": "https://github.com/sourav-bwn/gods-eye-view",
     "source": "Public GitHub repository description; checked 2026-09-29"
   }

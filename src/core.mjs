@@ -1,9 +1,10 @@
-import {readFile, readdir, writeFile, mkdir} from 'node:fs/promises';
+import {readFile, readdir, writeFile, mkdir, copyFile} from 'node:fs/promises';
 import {join, resolve} from 'node:path';
 import {randomUUID} from 'node:crypto';
 
 export const root = resolve(import.meta.dirname, '..');
 export const catalog = () => readFile(join(root, 'projects/catalog.json'), 'utf8').then(JSON.parse);
+export const imagePlan = project => project.screenshots?.length ? {image_files:project.screenshots.map((_,i)=>`screenshot-${i+1}.png`),image_source:project.screenshot_source} : {image_files:[],image_status:'Needs Sourav to review and supply a real app screenshot before posting'};
 export function safeId(id) {
   if (!/^\d{4}-\d{2}-\d{2}-[a-z0-9-]+-[a-f0-9]{8}$/.test(id || '')) throw new Error('Invalid draft ID');
   return id;
@@ -24,7 +25,7 @@ export function validateCopy(copy) {
 }
 export async function geminiCopy(project, previous) {
   if (!process.env.GEMINI_API_KEY) throw new Error('GEMINI_API_KEY missing: no scheduled draft generated');
-  const prompt = `Write two distinct first-person social posts for the developer Sourav Garai about his own project. Return ONLY JSON with string keys linkedin and instagram. No made-up metrics, users, hires, dates, technology, performance claims, or roles. Avoid generic AI filler. LinkedIn: professional, specific engineering choices and value to recruiters, stronger and more precise than earlier posts. Instagram: short, casual, visual, suited to the graphic. Do not imply the app is production-grade if source says demo. Do not repeat earlier hooks. Human approval is required before publication. Ground all claims only in this verified project brief:\n${JSON.stringify(project)}\nPrevious posts (style/hook avoidance only): ${JSON.stringify(previous.slice(-5))}`;
+  const prompt = `Write two distinct first-person social post drafts for Sourav Garai about his own public project. Return ONLY JSON with string keys linkedin and instagram. Sound like a person explaining something he actually built, not a promotional template. Use clear, direct sentences, natural rhythm and a concrete detail from the verified brief. No generic opening ("Excited to share", "Introducing"), recruiter pitch, superlatives, stock motivation, forced hook, emoji/hashtag pileup, or claims about users, impact, performance, security, dates, roles or tech that the brief cannot support. Explain any project-specific limitations plainly, using only the verified brief. Include the project's exact code URL in both drafts, and a verified demo URL only if the brief provides one. LinkedIn: two short paragraphs plus links, readable without the image. Instagram: shorter, conversational, with its code URL. Captions will be reviewed by Sourav before any posting. The companion graphic should be an actual app screenshot where available, not a typographic card; do not describe an image unless the project brief says what it shows. Base factual claims only on this verified brief:\n${JSON.stringify(project)}\nPrevious posts (avoid repeating hooks and phrasing): ${JSON.stringify(previous.slice(-5))}`;
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(process.env.GEMINI_MODEL || 'gemini-3.8-flash')}:generateContent`;
   const response = await fetch(url, {method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':process.env.GEMINI_API_KEY},body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{responseMimeType:'application/json',temperature:0.7}})});
   if (!response.ok) throw new Error(`Gemini failed HTTP ${response.status}: ${await response.text()}`);
@@ -46,19 +47,15 @@ export async function generate({sample=false}={}) {
   const id = `${new Date().toISOString().slice(0,10)}-${project.slug}-${randomUUID().slice(0,8)}`;
   const dir = join(root,'pending',id);
   await mkdir(dir,{recursive:true});
-  const draft = {id, project:project.slug, project_url:project.repo, headline:project.headline, features:project.features, linkedin:copy.linkedin, instagram:copy.instagram, alt_text:`Card for ${project.name}: ${project.headline} Features: ${project.features.join(', ')}.`, generation:sample?'manual-example':'gemini', status:'pending', created_at:new Date().toISOString()};
+  const draft = {id, project:project.slug, project_url:project.repo, headline:project.headline, features:project.features, linkedin:copy.linkedin, instagram:copy.instagram, generation:sample?'manual-example':'gemini', status:'pending', created_at:new Date().toISOString()};
+  const screenshots = project.screenshots || [];
+  for (let i=0;i<screenshots.length;i++) {
+    const path = screenshots[i];
+    if (!/^assets\/[a-z0-9-]+\/[a-z0-9-]+\.png$/.test(path)) throw new Error(`Unsafe screenshot path: ${path}`);
+    await copyFile(join(root,path),join(dir,`screenshot-${i+1}.png`));
+  }
+  Object.assign(draft,imagePlan(project));
   await writeFile(join(dir,'post.json'), JSON.stringify(draft,null,2)+'\n');
-  await renderCard(project,join(dir,'card.png'));
   console.log(JSON.stringify({id, dir, generation:draft.generation}));
   return draft;
-}
-export async function renderCard(project,path) {
-  const {spawn} = await import('node:child_process');
-  const html = join(root,'src','card.html');
-  const data = encodeURIComponent(JSON.stringify(project));
-  const url = `file://${html}?data=${data}`;
-  await new Promise((ok,no) => {
-    const child=spawn(process.env.CHROME_BIN||'google-chrome', ['--headless=new','--no-sandbox','--disable-gpu','--hide-scrollbars','--disable-dev-shm-usage','--force-device-scale-factor=1','--window-size=1080,1080',`--screenshot=${path}`,url],{stdio:'ignore'});
-    child.on('error',no); child.on('close',code=>code===0?ok():no(new Error(`Chrome exited ${code}`)));
-  });
 }

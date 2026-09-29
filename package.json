@@ -5,8 +5,9 @@
   "type": "module",
   "scripts": {
     "generate": "node src/cli.mjs generate",
-    "publish": "node src/cli.mjs publish",
     "test": "node --test"
   },
-  "engines": {"node": ">=22"}
+  "engines": {
+    "node": ">=22"
+  }
 }

@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {safeId,validateCopy,catalog} from '../src/core.mjs';
+import {safeId,validateCopy,catalog,imagePlan} from '../src/core.mjs';
 import {readFile} from 'node:fs/promises';
 import {join} from 'node:path';
 
@@ -23,4 +23,16 @@ test('sample draft stays pending and contains no secrets',async()=>{
   assert.equal(draft.generation,'manual-example');
   assert.match(draft.linkedin,/github.com\/sourav-bwn\/attendance-system/);
   assert.doesNotMatch(JSON.stringify(draft),/GEMINI_API_KEY|ACCESS_TOKEN/);
+});
+
+test('real app screenshots are copied in reviewed order, without a generated card fallback',async()=>{
+  const items=await catalog();
+  const student=items.find(x=>x.slug==='student-manage-system');
+  assert.deepEqual(imagePlan(student).image_files,['screenshot-1.png','screenshot-2.png','screenshot-3.png']);
+  assert.deepEqual(imagePlan(items.find(x=>x.slug==='attendance-system')).image_files,[]);
+  assert.match(imagePlan(items.find(x=>x.slug==='attendance-system')).image_status,/real app screenshot/);
+  for (const path of student.screenshots) {
+    const data=await readFile(join(import.meta.dirname,'..',path));
+    assert.equal(data.subarray(0,8).toString('hex'),'89504e470d0a1a0a');
+  }
 });
