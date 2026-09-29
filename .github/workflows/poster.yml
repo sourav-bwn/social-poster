@@ -1,4 +1,4 @@
-name: Social poster - approval first
+name: Social poster - draft generation only
 on:
   schedule:
     # Monday, Wednesday and Friday at 13:30 IST (UTC scheduling may drift under GitHub load).
@@ -6,26 +6,10 @@ on:
   workflow_dispatch:
     inputs:
       operation:
-        description: generate or publish a reviewed draft
+        description: Generate a new draft for review
         required: true
         type: choice
-        options: [generate, publish]
-      draft_id:
-        description: Exact pending draft folder ID (publish only)
-        required: false
-        type: string
-      channel:
-        description: Which account(s) to publish to
-        required: true
-        default: both
-        type: choice
-        options: [both, linkedin, instagram]
-      approval_confirmed:
-        description: Has Sourav approved this exact final copy and card? (publish only)
-        required: true
-        type: choice
-        options: ['no', 'yes']
-        default: 'no'
+        options: [generate]
 permissions:
   contents: write
   issues: write
@@ -45,7 +29,6 @@ jobs:
       - name: Generate draft (no publishing)
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          CHROME_BIN: /usr/bin/google-chrome
         run: |
           set -o pipefail
           node src/cli.mjs generate | tee /tmp/generated.json
@@ -61,34 +44,5 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           id=$(node -p 'JSON.parse(require("fs").readFileSync("/tmp/generated.json","utf8")).id')
-          printf 'Draft awaiting Sourav review. Nothing has been posted.\n\nText and graphic: https://github.com/%s/tree/main/pending/%s\n\nThe owner must review both captions and the card before manually dispatching Publish with the exact draft ID and approval_confirmed=yes.\n' "$GITHUB_REPOSITORY" "$id" > /tmp/review-issue.md
+          printf 'Draft awaiting Sourav review. Nothing has been posted.\n\nText and any available real app screenshots: https://github.com/%s/tree/main/pending/%s\n\nReview and edit the caption, verify every claim and image, and ask Sourav to approve the final package. Publication happens separately through his signed-in LinkedIn profile; this workflow never publishes.\n' "$GITHUB_REPOSITORY" "$id" > /tmp/review-issue.md
           gh issue create --title "Review social post: $id" --body-file /tmp/review-issue.md
-  publish:
-    if: github.event_name == 'workflow_dispatch' && inputs.operation == 'publish' && inputs.approval_confirmed == 'yes' && inputs.draft_id != ''
-    runs-on: ubuntu-latest
-    timeout-minutes: 12
-    steps:
-      - uses: actions/checkout@v4
-        with: {persist-credentials: true}
-      - uses: actions/setup-node@v4
-        with: {node-version: '22'}
-      - name: Publish approved draft
-        env:
-          APPROVED: 'yes'
-          LINKEDIN_ACCESS_TOKEN: ${{ secrets.LINKEDIN_ACCESS_TOKEN }}
-          LINKEDIN_PERSON_URN: ${{ secrets.LINKEDIN_PERSON_URN }}
-          INSTAGRAM_ACCESS_TOKEN: ${{ secrets.INSTAGRAM_ACCESS_TOKEN }}
-          INSTAGRAM_USER_ID: ${{ secrets.INSTAGRAM_USER_ID }}
-          DRAFT_ID: ${{ inputs.draft_id }}
-          CHANNEL: ${{ inputs.channel }}
-        run: node src/cli.mjs publish "$DRAFT_ID" "$CHANNEL"
-      - name: Save publication IDs
-        if: always()
-        run: |
-          if ! git diff --quiet -- pending/; then
-            git config user.name 'github-actions[bot]'
-            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-            git add pending/
-            git commit -m 'Record social post publish result'
-            git push
-          fi
