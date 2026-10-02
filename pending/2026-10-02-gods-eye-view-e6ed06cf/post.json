@@ -1,0 +1,18 @@
+{
+  "id": "2026-10-02-gods-eye-view-e6ed06cf",
+  "project": "gods-eye-view",
+  "project_url": "https://github.com/sourav-bwn/gods-eye-view",
+  "headline": "A globe built for exploring live layers.",
+  "features": [
+    "Interactive 3D globe",
+    "Live data layers",
+    "Open-source project"
+  ],
+  "linkedin": "I built God's Eye View as an interactive, browser-based 3D globe for exploring live, open-source spatial data across different layers.\n\nBecause the globe pulls in external feeds, access to certain layers is tied directly to third-party API availability. The project is open source and structured to let you inspect how the spatial layers are brought together.\n\nCode: https://github.com/sourav-bwn/gods-eye-view",
+  "instagram": "God's Eye View is a browser-based 3D globe built to navigate live, open-source spatial data layers. Keep in mind that some layers depend on third-party API access and uptime to render.\n\nYou can view the source code here: https://github.com/sourav-bwn/gods-eye-view",
+  "generation": "gemini",
+  "status": "pending",
+  "created_at": "2026-10-02T10:40:12.314Z",
+  "image_files": [],
+  "image_status": "Needs Sourav to review and supply a real app screenshot before posting"
+}
