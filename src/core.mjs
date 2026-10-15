@@ -19,8 +19,19 @@ export async function nextProject() {
   for (const d of drafts) if (d && seen.has(d.project)) seen.set(d.project, seen.get(d.project)+1);
   return items.sort((a,b) => seen.get(a.slug)-seen.get(b.slug))[0];
 }
-export function validateCopy(copy) {
+export function validateCopy(copy, project) {
   for (const key of ['linkedin','instagram']) if (typeof copy?.[key] !== 'string' || copy[key].trim().length < 60 || copy[key].length > 2100) throw new Error(`Missing or out-of-range ${key} text`);
+  if (project) {
+    const allowed = new Set([project.repo, project.demo].filter(Boolean));
+    if (typeof project.repo !== 'string' || !project.repo.startsWith('https://github.com/sourav-bwn/')) throw new Error('Missing verified project repository');
+    for (const key of ['linkedin','instagram']) {
+      // Strip prose punctuation, but do not accept look-alike URLs or a repo URL
+      // appearing only inside another URL's query string.
+      const links = (copy[key].match(/https?:\/\/[^\s<>"']+/g) || []).map(url => url.replace(/[.,!?:;)\]]+$/, ''));
+      if (!links.includes(project.repo)) throw new Error(`Missing verified code URL in ${key}`);
+      if (links.some(url => !allowed.has(url))) throw new Error(`Unverified URL in ${key}`);
+    }
+  }
   return {linkedin:copy.linkedin.trim(), instagram:copy.instagram.trim()};
 }
 export async function geminiCopy(project, previous) {
@@ -32,7 +43,7 @@ export async function geminiCopy(project, previous) {
   const data = await response.json();
   const text = data.candidates?.[0]?.content?.parts?.map(p=>p.text||'').join('');
   if (!text) throw new Error('Gemini returned no usable text');
-  return validateCopy(JSON.parse(text));
+  return validateCopy(JSON.parse(text), project);
 }
 export async function generate({sample=false}={}) {
   const project = sample ? (await catalog())[0] : await nextProject();
@@ -43,7 +54,7 @@ export async function generate({sample=false}={}) {
   const copy = sample ? validateCopy({
     linkedin: `I built AttendEase to make a routine classroom task easier: keeping attendance accurate without slowing down the day.\n\nIt runs in a browser and keeps records by date, with search, status filters and live counts. I added Excel export, CSV backup and print so the data is useful beyond the screen.\n\nThis project pushed me to think about the full workflow, not just the form: entering records, finding them again and taking them out when needed. The code is public here: ${project.repo}\n\n#WebDevelopment #JavaScript #StudentTools`,
     instagram: `Built a simpler way to keep track of attendance 📋\n\nAttendEase lets you mark students, see live counts, find a record and export to Excel or CSV. It runs right in the browser.\n\nOne small tool, lots of everyday friction removed. Code: ${project.repo}\n\n#BuildInPublic #WebDev #StudentTools`
-  }) : await geminiCopy(project, previous.filter(Boolean).map(x=>({linkedin:x.linkedin, instagram:x.instagram})));
+  }, project) : await geminiCopy(project, previous.filter(Boolean).map(x=>({linkedin:x.linkedin, instagram:x.instagram})));
   const id = `${new Date().toISOString().slice(0,10)}-${project.slug}-${randomUUID().slice(0,8)}`;
   const dir = join(root,'pending',id);
   await mkdir(dir,{recursive:true});
