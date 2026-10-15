@@ -36,3 +36,38 @@ test('real app screenshots are copied in reviewed order, without a generated car
     assert.equal(data.subarray(0,8).toString('hex'),'89504e470d0a1a0a');
   }
 });
+
+
+const project = {repo:'https://github.com/sourav-bwn/demo', demo:'https://demo.example/'};
+const caption = url => `A concrete project detail with enough context for a reviewable draft. Code: ${url}`;
+const pair = url => ({linkedin:caption(url), instagram:caption(url)});
+test('project copy requires the verified repository in both captions',()=>{
+  assert.throws(()=>validateCopy(pair('https://other.example/'), project), /verified code URL/);
+  assert.throws(()=>validateCopy({...pair(project.repo),instagram:caption('no link')}, project), /instagram/);
+});
+test('lookalike and embedded repository URLs are not accepted',()=>{
+  for (const url of [project.repo+'-fake',project.repo+'?tracking=1','https://other.example/?next='+project.repo]) {
+    assert.throws(()=>validateCopy(pair(url), project));
+  }
+});
+test('verified links work with sentence punctuation and markdown',()=>{
+  for (const url of [project.repo+'.',`[code](${project.repo})`,project.repo+'!']) {
+    assert.doesNotThrow(()=>validateCopy(pair(url), project));
+  }
+});
+test('invented demo links fail even when code link is present',()=>{
+  assert.throws(()=>validateCopy(pair(project.repo+' https://invented.example/'), project), /Unverified URL/);
+});
+test('only a supplied demo URL is allowed',()=>{
+  assert.doesNotThrow(()=>validateCopy(pair(project.repo+' '+project.demo), project));
+  assert.throws(()=>validateCopy(pair(project.repo+' '+project.demo), {repo:project.repo}), /Unverified URL/);
+});
+test('Gemini output is link-validated without contacting the API',async()=>{
+  const {geminiCopy} = await import('../src/core.mjs');
+  const previousFetch = globalThis.fetch;
+  const previousKey = process.env.GEMINI_API_KEY;
+  process.env.GEMINI_API_KEY = 'test-only-placeholder';
+  globalThis.fetch = async () => ({ok:true,json:async()=>({candidates:[{content:{parts:[{text:JSON.stringify(pair('https://invented.example/'))}]}}]})});
+  try {await assert.rejects(geminiCopy(project, []), /verified code URL/);}
+  finally {globalThis.fetch=previousFetch;if(previousKey===undefined)delete process.env.GEMINI_API_KEY;else process.env.GEMINI_API_KEY=previousKey;}
+});
