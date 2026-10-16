@@ -21,3 +21,7 @@ Node 22+; no npm dependencies. Run `npm test`. `node src/cli.mjs generate --samp
 ## Draft link validation
 
 Generation rejects a caption unless both platforms include the exact verified repository URL. URLs outside that project's catalog repository/demo links are rejected, including invented demos and look-alike repository paths. Sentence punctuation and Markdown links are accepted. This check does not fact-check the caption text or approve publication; Sourav still reviews the whole package. Tests mock Gemini responses and make no API calls.
+
+## Complete draft packages
+
+Drafts are assembled in a temporary directory outside `pending/` and moved into the review queue only after every screenshot and `post.json` is written. Failed saves clean up staging files; an existing complete draft is not overwritten. Screenshot order and missing-image review status are unchanged. Offline save tests use temporary fixtures and do not generate captions or publish posts.
