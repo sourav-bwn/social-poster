@@ -1,4 +1,4 @@
-import {readFile, readdir, writeFile, mkdir, copyFile} from 'node:fs/promises';
+import {readFile, readdir, writeFile, mkdir, copyFile, mkdtemp, rename, rm} from 'node:fs/promises';
 import {join, resolve} from 'node:path';
 import {randomUUID} from 'node:crypto';
 
@@ -57,16 +57,30 @@ export async function generate({sample=false}={}) {
   }, project) : await geminiCopy(project, previous.filter(Boolean).map(x=>({linkedin:x.linkedin, instagram:x.instagram})));
   const id = `${new Date().toISOString().slice(0,10)}-${project.slug}-${randomUUID().slice(0,8)}`;
   const dir = join(root,'pending',id);
-  await mkdir(dir,{recursive:true});
   const draft = {id, project:project.slug, project_url:project.repo, headline:project.headline, features:project.features, linkedin:copy.linkedin, instagram:copy.instagram, generation:sample?'manual-example':'gemini', status:'pending', created_at:new Date().toISOString()};
-  const screenshots = project.screenshots || [];
-  for (let i=0;i<screenshots.length;i++) {
-    const path = screenshots[i];
-    if (!/^assets\/[a-z0-9-]+\/[a-z0-9-]+\.png$/.test(path)) throw new Error(`Unsafe screenshot path: ${path}`);
-    await copyFile(join(root,path),join(dir,`screenshot-${i+1}.png`));
-  }
-  Object.assign(draft,imagePlan(project));
-  await writeFile(join(dir,'post.json'), JSON.stringify(draft,null,2)+'\n');
+  await saveDraft(root, project, draft);
   console.log(JSON.stringify({id, dir, generation:draft.generation}));
   return draft;
+}
+
+// Publish only complete packages to pending; failed copies/writes stay invisible.
+export async function saveDraft(baseDir, project, draft) {
+  safeId(draft.id);
+  const screenshots = project.screenshots || [];
+  for (const path of screenshots) {
+    if (!/^assets\/[a-z0-9-]+\/[a-z0-9-]+\.png$/.test(path)) throw new Error(`Unsafe screenshot path: ${path}`);
+  }
+  const pending = join(baseDir, 'pending');
+  await mkdir(pending, {recursive:true});
+  const staging = await mkdtemp(join(baseDir, '.draft-'));
+  try {
+    for (let i=0; i<screenshots.length; i++) {
+      await copyFile(join(baseDir, screenshots[i]), join(staging, `screenshot-${i+1}.png`));
+    }
+    Object.assign(draft, imagePlan(project));
+    await writeFile(join(staging, 'post.json'), JSON.stringify(draft,null,2)+'\n');
+    await rename(staging, join(pending, draft.id));
+  } finally {
+    await rm(staging, {recursive:true, force:true});
+  }
 }
