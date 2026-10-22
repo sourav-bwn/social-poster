@@ -1,0 +1,18 @@
+{
+  "id": "2026-10-22-attendance-system-d345721d",
+  "project": "attendance-system",
+  "project_url": "https://github.com/sourav-bwn/attendance-system",
+  "headline": "Less time on records. More time for students.",
+  "features": [
+    "Date-based auto-save",
+    "Search and live stats",
+    "Excel + CSV export"
+  ],
+  "linkedin": "I built AttendEase to handle student attendance records directly in the browser. It includes date-based auto-saving so entries stay preserved by date, alongside built-in search, filtering, and live stats that update while taking attendance.\n\nTo make sure data isn't trapped in the browser session, the tool supports Excel exports, CSV backups, and print formatting. You can review the full project setup on GitHub.\n\nCode: https://github.com/sourav-bwn/attendance-system",
+  "instagram": "I put together AttendEase as a browser-based tool for taking student attendance. It handles per-date auto-saving, live stats, and search filters, with options to export to Excel, create CSV backups, or print records directly.\n\nCode: https://github.com/sourav-bwn/attendance-system",
+  "generation": "gemini",
+  "status": "pending",
+  "created_at": "2026-10-22T09:33:06.953Z",
+  "image_files": [],
+  "image_status": "Needs Sourav to review and supply a real app screenshot before posting"
+}
