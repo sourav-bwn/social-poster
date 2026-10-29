@@ -1,0 +1,22 @@
+{
+  "id": "2026-10-29-student-manage-system-45180f3f",
+  "project": "student-manage-system",
+  "project_url": "https://github.com/sourav-bwn/student-manage-system",
+  "headline": "Keep student records in one place.",
+  "features": [
+    "Attendance",
+    "Grades",
+    "Local demo only"
+  ],
+  "linkedin": "Student Management System is a browser-based dashboard project I worked on to keep academic records, attendance, and grades together in one interface.\n\nBecause it is built purely as a local demo using sample data, it is not configured as a production service for handling actual student data. You can inspect the project structure or test the dashboard directly.\n\nDemo: https://sourav-bwn.github.io/student-manage-system/\nCode: https://github.com/sourav-bwn/student-manage-system",
+  "instagram": "Student Management System is a local browser demo I set up to manage academic records, attendance, and grades in a unified dashboard. It is strictly a demo built around sample records, not a production tool for real student data.\n\nDemo: https://sourav-bwn.github.io/student-manage-system/\nCode: https://github.com/sourav-bwn/student-manage-system",
+  "generation": "gemini",
+  "status": "pending",
+  "created_at": "2026-10-29T11:05:05.908Z",
+  "image_files": [
+    "screenshot-1.png",
+    "screenshot-2.png",
+    "screenshot-3.png"
+  ],
+  "image_source": "Live public demo with sample data, visually reviewed 2026-09-29"
+}
